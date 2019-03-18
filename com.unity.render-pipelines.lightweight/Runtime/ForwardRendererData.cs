@@ -1,56 +1,44 @@
+using System;
+
 namespace UnityEngine.Rendering.LWRP
 {
     [CreateAssetMenu(fileName = "Custom Forward Renderer", menuName = "Rendering/Lightweight Render Pipeline/Forward Renderer", order = CoreUtils.assetCreateMenuPriority1)]
     public class ForwardRendererData : ScriptableRendererData
     {
-        [SerializeField] Shader m_BlitShader = null;
-        [SerializeField] Shader m_CopyDepthShader = null;
-        [SerializeField] Shader m_ScreenSpaceShadowShader = null;
-        [SerializeField] Shader m_SamplingShader = null;
+        [Serializable, ReloadGroup]
+        public sealed class ShaderResources
+        {
+            [SerializeField, Reload("Shaders/Utils/Blit.shader")]
+            public Shader blitPS;
+
+            [SerializeField, Reload("Shaders/Utils/CopyDepth.shader")]
+            public Shader copyDepthPS;
+
+            [SerializeField, Reload("Shaders/Utils/ScreenSpaceShadows.shader")]
+            public Shader screenSpaceShadowPS;
+
+            [SerializeField, Reload("Shaders/Utils/Sampling.shader")]
+            public Shader samplingPS;
+        }
+
+        public ShaderResources shaders;
 
         [SerializeField] LayerMask m_OpaqueLayerMask = -1;
         [SerializeField] LayerMask m_TransparentLayerMask = -1;
 
         [SerializeField] StencilStateData m_DefaultStencilState = null;
 
-        protected override ScriptableRenderer Create()
+        protected override void OnEnable()
         {
-            return new ForwardRenderer(this);
+            ResourceReloader.ReloadAllNullIn(this, LightweightRenderPipelineAsset.packagePath);
         }
 
-        internal Shader blitShader
-        {
-            get => m_BlitShader;
-        }
+        protected override ScriptableRenderer Create() => new ForwardRenderer(this);
 
-        internal Shader copyDepthShader
-        {
-            get => m_CopyDepthShader;
-        }
+        internal LayerMask opaqueLayerMask => m_OpaqueLayerMask;
 
-        internal Shader screenSpaceShadowShader
-        {
-            get => m_ScreenSpaceShadowShader;
-        }
+        public LayerMask transparentLayerMask => m_TransparentLayerMask;
 
-        internal Shader samplingShader
-        {
-            get => m_SamplingShader;
-        }
-
-        internal LayerMask opaqueLayerMask
-        {
-            get => m_OpaqueLayerMask;
-        }
-
-        public LayerMask transparentLayerMask
-        {
-            get => m_TransparentLayerMask;
-        }
-
-        public StencilStateData defaultStencilState
-        {
-            get => m_DefaultStencilState;
-        }
+        public StencilStateData defaultStencilState => m_DefaultStencilState;
     }
 }
