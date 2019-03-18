@@ -1,8 +1,6 @@
 #if UNITY_EDITOR //formerly migration were only handled in editor for this asset
-using System;
 using UnityEngine.Serialization;
-
-using UnityEditor;
+using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.HDPipeline
 {
@@ -23,13 +21,17 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 i.shaderGraphs = null;
                 i.textures = null;
                 i.shaders = null;
-                ResourceReloader.ReloadAllNullIn(i);
+                ResourceReloader.ReloadAllNullIn(i, HDUtils.GetHDRenderPipelinePath());
             })
         );
 
         [HideInInspector, SerializeField, FormerlySerializedAs("version")]
         Version m_Version = Version.First;  //keep former creation affectation
-        Version IVersionable<Version>.version { get { return (Version)m_Version; } set { m_Version = value; } }
+        Version IVersionable<Version>.version
+        {
+            get => m_Version;
+            set => m_Version = value;
+        }
 
         public void UpgradeIfNeeded() => k_Migration.Migrate(this);
     }

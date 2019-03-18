@@ -1,11 +1,11 @@
 using System;
-
+using System.IO;
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
 #endif
 
-namespace UnityEngine.Experimental.Rendering.HDPipeline
+namespace UnityEngine.Rendering
 {
 #if UNITY_EDITOR
     /// <summary>
@@ -13,9 +13,9 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     /// The reload call should only be done in Editor context though but it
     /// could be called from runtime entities.
     /// </summary>
-    internal static class ResourceReloader
+    public static class ResourceReloader
     {
-        public static void ReloadAllNullIn(System.Object container)
+        public static void ReloadAllNullIn(System.Object container, string basePath)
         {
             if (IsNull(container))
                 return;
@@ -26,7 +26,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 if (IsReloadGroup(fieldInfo))
                 {
                     FixGroupIfNeeded(container, fieldInfo);
-                    ReloadAllNullIn(fieldInfo.GetValue(container));
+                    ReloadAllNullIn(fieldInfo.GetValue(container), basePath);
                 }
 
                 //Find null field and reload them
@@ -35,7 +35,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 {
                     if (attribute.pathes.Length == 1)
                     {
-                        SetAndLoadIfNull(container, fieldInfo, GetFullPath(attribute),
+                        SetAndLoadIfNull(container, fieldInfo, GetFullPath(basePath, attribute),
                             attribute.package == ReloadAttribute.Package.Builtin);
                     }
                     else if (attribute.pathes.Length > 1)
@@ -49,7 +49,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                             for (int index = 0; index < attribute.pathes.Length; ++index)
                             {
                                 FixGroupIfNeeded(array, index);
-                                ReloadAllNullIn(array.GetValue(index));
+                                ReloadAllNullIn(array.GetValue(index), basePath);
                             }
                         }
                         else
@@ -57,7 +57,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                             bool builtin = attribute.package == ReloadAttribute.Package.Builtin;
                             //Find each null element and reload them
                             for (int index = 0; index < attribute.pathes.Length; ++index)
-                                SetAndLoadIfNull(array, index, GetFullPath(attribute, index), builtin);
+                                SetAndLoadIfNull(array, index, GetFullPath(basePath, attribute, index), builtin);
                         }
                     }
                 }
@@ -146,54 +146,39 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                 array.SetValue(Load(path, array.GetType().GetElementType(), builtin), index);
         }
 
-        static string GetFullPath(ReloadAttribute attribute, int index = 0)
+        static string GetFullPath(string basePath, ReloadAttribute attribute, int index = 0)
         {
-            string basePath;
+            string path;
             switch (attribute.package)
             {
                 case ReloadAttribute.Package.Builtin:
-                    basePath = "";
+                    path = attribute.pathes[index];
                     break;
-                case ReloadAttribute.Package.CoreEditor:
-                    // All CoreRP have been move to HDRP currently for out of preview of SRP and LW
-                    // basePath = HDUtils.GetCorePath() + "Editor/"
-                    basePath = HDUtils.GetHDRenderPipelinePath() + "Editor/Core/";
-                    break;
-                case ReloadAttribute.Package.CoreRuntime:
-                    // All CoreRP have been move to HDRP currently for out of preview of SRP and LW
-                    // basePath = HDUtils.GetCorePath() + "Runtime/"
-                    basePath = HDUtils.GetHDRenderPipelinePath() + "Runtime/Core/";
-                    break;
-                case ReloadAttribute.Package.HDRPEditor:
-                    basePath = HDUtils.GetHDRenderPipelinePath() + "Editor/";
-                    break;
-                case ReloadAttribute.Package.HDRPRuntime:
-                    basePath = HDUtils.GetHDRenderPipelinePath() + "Runtime/";
+                case ReloadAttribute.Package.Root:
+                    path = Path.Combine(basePath, attribute.pathes[index]);
                     break;
                 default:
                     throw new ArgumentException("Unknown Package Path!");
             }
-            return basePath + attribute.pathes[index];
+            return path;
         }
     }
 #endif
-
-
 
     /// <summary>
     /// Attribute specifying information to reload with ResourceReloader.
     /// Stock and do nothing at runtime.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    internal class ReloadAttribute : Attribute
+    public class ReloadAttribute : Attribute
     {
-        public enum Package { Builtin, CoreRuntime, CoreEditor, HDRPRuntime, HDRPEditor };
+        public enum Package { Builtin, Root };
 #if UNITY_EDITOR
         public readonly Package package;
         public readonly string[] pathes;
 #endif
 
-        public ReloadAttribute(string[] pathes, Package package = Package.HDRPRuntime)
+        public ReloadAttribute(string[] pathes, Package package = Package.Root)
         {
 #if UNITY_EDITOR
             this.pathes = pathes;
@@ -201,12 +186,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 #endif
         }
 
-        public ReloadAttribute(string path, Package package = Package.HDRPRuntime)
+        public ReloadAttribute(string path, Package package = Package.Root)
             : this(new string[] { path }, package)
         { }
 
         public ReloadAttribute(string pathFormat, int rangeMin, int rangeMax,
-            Package package = Package.HDRPRuntime)
+            Package package = Package.Root)
         {
 #if UNITY_EDITOR
             this.package = package;
@@ -224,6 +209,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
     /// Be sure class using it have default constructor!
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    internal class ReloadGroupAttribute : Attribute
+    public class ReloadGroupAttribute : Attribute
     { }
 }
