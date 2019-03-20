@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using UnityEngine.Assertions;
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
@@ -15,6 +16,12 @@ namespace UnityEngine.Rendering
     /// </summary>
     public static class ResourceReloader
     {
+        /// <summary>
+        /// Looks for resources in the given <paramref name="container"/> object and reload the ones
+        /// that are missing or broken.
+        /// </summary>
+        /// <param name="container">The object containing reload-able resources</param>
+        /// <param name="basePath">The base path for the package</param>
         public static void ReloadAllNullIn(System.Object container, string basePath)
         {
             if (IsNull(container))
@@ -22,7 +29,7 @@ namespace UnityEngine.Rendering
 
             foreach (var fieldInfo in container.GetType().GetFields())
             {
-                //Recurse on subcontainers
+                //Recurse on sub-containers
                 if (IsReloadGroup(fieldInfo))
                 {
                     FixGroupIfNeeded(container, fieldInfo);
@@ -33,20 +40,20 @@ namespace UnityEngine.Rendering
                 var attribute = GetReloadAttribute(fieldInfo);
                 if (attribute != null)
                 {
-                    if (attribute.pathes.Length == 1)
+                    if (attribute.paths.Length == 1)
                     {
                         SetAndLoadIfNull(container, fieldInfo, GetFullPath(basePath, attribute),
                             attribute.package == ReloadAttribute.Package.Builtin);
                     }
-                    else if (attribute.pathes.Length > 1)
+                    else if (attribute.paths.Length > 1)
                     {
-                        FixArrayIfNeeded(container, fieldInfo, attribute.pathes.Length);
+                        FixArrayIfNeeded(container, fieldInfo, attribute.paths.Length);
 
                         var array = (Array)fieldInfo.GetValue(container);
                         if (IsReloadGroup(array))
                         {
-                            //Recurse on each subcontainers
-                            for (int index = 0; index < attribute.pathes.Length; ++index)
+                            //Recurse on each sub-containers
+                            for (int index = 0; index < attribute.paths.Length; ++index)
                             {
                                 FixGroupIfNeeded(array, index);
                                 ReloadAllNullIn(array.GetValue(index), basePath);
@@ -56,7 +63,7 @@ namespace UnityEngine.Rendering
                         {
                             bool builtin = attribute.package == ReloadAttribute.Package.Builtin;
                             //Find each null element and reload them
-                            for (int index = 0; index < attribute.pathes.Length; ++index)
+                            for (int index = 0; index < attribute.paths.Length; ++index)
                                 SetAndLoadIfNull(array, index, GetFullPath(basePath, attribute, index), builtin);
                         }
                     }
@@ -77,6 +84,8 @@ namespace UnityEngine.Rendering
 
         static void FixGroupIfNeeded(Array array, int index)
         {
+            Assert.IsNotNull(array);
+
             if (IsNull(array.GetValue(index)))
             {
                 array.SetValue(
@@ -91,7 +100,7 @@ namespace UnityEngine.Rendering
             if (IsNull(container, info) || ((Array)info.GetValue(container)).Length < length)
                 info.SetValue(
                     container,
-                    Activator.CreateInstance(info.FieldType, new object[] { length })
+                    Activator.CreateInstance(info.FieldType, length)
                 );
         }
 
@@ -99,7 +108,7 @@ namespace UnityEngine.Rendering
         {
             var attributes = (ReloadAttribute[])fieldInfo
                 .GetCustomAttributes(typeof(ReloadAttribute), false);
-            if (attributes == null || attributes.Length == 0)
+            if (attributes.Length == 0)
                 return null;
             return attributes[0];
         }
@@ -126,8 +135,7 @@ namespace UnityEngine.Rendering
             else
                 result = AssetDatabase.LoadAssetAtPath(path, type);
             if (IsNull(result))
-                UnityEngine.Debug.LogWarning(
-                    String.Format("Cannot load. Incorrect path: {0} Null returned.", path));
+                UnityEngine.Debug.LogWarning($"Cannot load. Incorrect path: {path} Null returned.");
             return result;
         }
 
@@ -152,10 +160,10 @@ namespace UnityEngine.Rendering
             switch (attribute.package)
             {
                 case ReloadAttribute.Package.Builtin:
-                    path = attribute.pathes[index];
+                    path = attribute.paths[index];
                     break;
                 case ReloadAttribute.Package.Root:
-                    path = Path.Combine(basePath, attribute.pathes[index]);
+                    path = Path.Combine(basePath, attribute.paths[index]);
                     break;
                 default:
                     throw new ArgumentException("Unknown Package Path!");
@@ -166,38 +174,82 @@ namespace UnityEngine.Rendering
 #endif
 
     /// <summary>
-    /// Attribute specifying information to reload with ResourceReloader.
-    /// Stock and do nothing at runtime.
+    /// Attribute specifying information to reload with <see cref="ResourceReloader"/>. This is only
+    /// used in the editor and doesn't have any effect at runtime.
     /// </summary>
+    /// <seealso cref="ResourceReloader"/>
+    /// <seealso cref="ReloadGroupAttribute"/>
     [AttributeUsage(AttributeTargets.Field)]
-    public class ReloadAttribute : Attribute
+    public sealed class ReloadAttribute : Attribute
     {
-        public enum Package { Builtin, Root };
+        /// <summary>
+        /// Lookup method for a resource.
+        /// </summary>
+        public enum Package
+        {
+            /// <summary>
+            /// Used for builtin resources when the resource isn't part of the package (i.e. builtin
+            /// shaders).
+            /// </summary>
+            Builtin,
+
+            /// <summary>
+            /// Used for resources inside the package.
+            /// </summary>
+            Root
+        };
+
 #if UNITY_EDITOR
+        /// <summary>
+        /// The lookup method.
+        /// </summary>
         public readonly Package package;
-        public readonly string[] pathes;
+
+        /// <summary>
+        /// Search paths.
+        /// </summary>
+        public readonly string[] paths;
 #endif
 
-        public ReloadAttribute(string[] pathes, Package package = Package.Root)
+        /// <summary>
+        /// Creates a new <see cref="ReloadAttribute"/> for an array by specifying each resource
+        /// path individually.
+        /// </summary>
+        /// <param name="paths">Search paths</param>
+        /// <param name="package">The lookup method</param>
+        public ReloadAttribute(string[] paths, Package package = Package.Root)
         {
 #if UNITY_EDITOR
-            this.pathes = pathes;
+            this.paths = paths;
             this.package = package;
 #endif
         }
 
+        /// <summary>
+        /// Creates a new <see cref="ReloadAttribute"/> for a single resource.
+        /// </summary>
+        /// <param name="path">Search path</param>
+        /// <param name="package">The lookup method</param>
         public ReloadAttribute(string path, Package package = Package.Root)
-            : this(new string[] { path }, package)
+            : this(new[] { path }, package)
         { }
 
+        /// <summary>
+        /// Creates a new <see cref="ReloadAttribute"/> for an array using automatic path name
+        /// numbering.
+        /// </summary>
+        /// <param name="pathFormat">The format used for the path</param>
+        /// <param name="rangeMin">The array start index (inclusive)</param>
+        /// <param name="rangeMax">The array end index (exclusive)</param>
+        /// <param name="package">The lookup method</param>
         public ReloadAttribute(string pathFormat, int rangeMin, int rangeMax,
             Package package = Package.Root)
         {
 #if UNITY_EDITOR
             this.package = package;
-            pathes = new string[rangeMax - rangeMin];
+            paths = new string[rangeMax - rangeMin];
             for (int index = rangeMin, i = 0; index < rangeMax; ++index, ++i)
-                pathes[i] = string.Format(pathFormat, index);
+                paths[i] = string.Format(pathFormat, index);
 #endif
         }
     }
@@ -205,10 +257,11 @@ namespace UnityEngine.Rendering
     /// <summary>
     /// Attribute specifying that it contains element that should be reloaded.
     /// If the instance of the class is null, the system will try to recreate
-    /// it with default constructor.
-    /// Be sure class using it have default constructor!
+    /// it with the default constructor.
+    /// Be sure classes using it have default constructor!
     /// </summary>
+    /// <seealso cref="ReloadAttribute"/>
     [AttributeUsage(AttributeTargets.Class)]
-    public class ReloadGroupAttribute : Attribute
+    public sealed class ReloadGroupAttribute : Attribute
     { }
 }
