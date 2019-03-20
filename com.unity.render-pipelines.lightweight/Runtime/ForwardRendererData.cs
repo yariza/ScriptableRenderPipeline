@@ -28,10 +28,12 @@ namespace UnityEngine.Rendering.LWRP
 
         [SerializeField] StencilStateData m_DefaultStencilState = null;
 
+#if UNITY_EDITOR
         protected override void OnEnable()
         {
             ResourceReloader.ReloadAllNullIn(this, LightweightRenderPipelineAsset.packagePath);
         }
+#endif
 
         protected override ScriptableRenderer Create() => new ForwardRenderer(this);
 
