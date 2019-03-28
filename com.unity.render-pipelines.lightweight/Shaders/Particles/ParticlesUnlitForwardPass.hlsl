@@ -92,6 +92,11 @@ void InitializeInputData(VaryingsParticle input, half3 normalTS, out InputData o
 VaryingsParticle vertParticleUnlit(AttributesParticle input)
 {
     VaryingsParticle output = (VaryingsParticle)0;
+    
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+    
     VertexPositionInputs vertexInput = GetVertexPositionInputs(input.vertex.xyz);
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normal, input.tangent);
 
@@ -114,10 +119,6 @@ VaryingsParticle vertParticleUnlit(AttributesParticle input)
     output.normalWS = normalInput.normalWS;
     output.viewDirWS = viewDirWS;
 #endif
-
-    UNITY_SETUP_INSTANCE_ID(input);
-    UNITY_TRANSFER_INSTANCE_ID(input, output);
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     
     output.texcoord = input.texcoords.xy;
 #ifdef _FLIPBOOKBLENDING_ON

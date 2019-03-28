@@ -93,6 +93,10 @@ VaryingsParticle ParticlesLitVertex(AttributesParticle input)
 {
     VaryingsParticle output = (VaryingsParticle)0;
     
+    UNITY_SETUP_INSTANCE_ID(input);
+    UNITY_TRANSFER_INSTANCE_ID(input, output);
+    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+    
     VertexPositionInputs vertexInput = GetVertexPositionInputs(input.vertex.xyz);
     VertexNormalInputs normalInput = GetVertexNormalInputs(input.normal, input.tangent);
     half3 viewDirWS = GetCameraPositionWS() - vertexInput.positionWS;
@@ -119,10 +123,6 @@ VaryingsParticle ParticlesLitVertex(AttributesParticle input)
     output.positionWS.w = fogFactor;
     output.clipPos = vertexInput.positionCS;
     output.color = input.color;
-
-    UNITY_SETUP_INSTANCE_ID(input);
-    UNITY_TRANSFER_INSTANCE_ID(input, output);
-    UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
     
     output.texcoord = input.texcoords.xy;
 #ifdef _FLIPBOOKBLENDING_ON
