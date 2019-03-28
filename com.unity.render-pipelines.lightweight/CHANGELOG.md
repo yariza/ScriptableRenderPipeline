@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - (WIP) Added a Light2D component that works with the 2D renderer to add lighting effects to 2D sprites.
 
 ### Fixed
+- When in playmode, the error 'Non matching Profiler.EndSample' no longer appears. [case 1140750](https://fogbugz.unity3d.com/f/cases/1140750/)
 - Fixed a project import issue in the LWRP template.
 - Fixed the warnings that appear when you create new Unlit Shader Graphs using the Lightweight Render Pipeline.
 - Fixed light attenuation precision on mobile platforms.
