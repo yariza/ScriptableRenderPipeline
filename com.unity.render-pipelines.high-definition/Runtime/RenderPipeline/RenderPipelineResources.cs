@@ -220,45 +220,45 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
 #if ENABLE_RAYTRACING
             // Reflection
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingReflections.raytrace")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingReflections.raytrace")]
             public RaytracingShader reflectionRaytracing;
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingReflectionFilter.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingReflectionFilter.compute")]
             public ComputeShader reflectionBilateralFilterCS;
 
             // Shadows
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingAreaShadows.raytrace")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingAreaShadows.raytrace")]
             public RaytracingShader areaShadowsRaytracingRT;
-            [Reload("RenderPipeline/Raytracing/Shaders/AreaShadows/RaytracingAreaShadows.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/AreaShadows/RaytracingAreaShadows.compute")]
             public ComputeShader areaShadowRaytracingCS;
-            [Reload("RenderPipeline/Raytracing/Shaders/AreaBilateralShadow.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/AreaBilateralShadow.compute")]
             public ComputeShader areaShadowFilterCS;
 
             // Primary visibility
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingRenderer.raytrace")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingRenderer.raytrace")]
             public RaytracingShader forwardRaytracing;
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingFlagMask.raytrace")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingFlagMask.raytrace")]
             public Shader           raytracingFlagMask;
 
             // Light cluster
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingLightCluster.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingLightCluster.compute")]
             public ComputeShader lightClusterBuildCS;
-            [Reload("RenderPipeline/Raytracing/Shaders/DebugLightCluster.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/DebugLightCluster.compute")]
             public ComputeShader lightClusterDebugCS;
 
             // Indirect Diffuse
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingIndirectDiffuse.raytrace")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingIndirectDiffuse.raytrace")]
             public RaytracingShader indirectDiffuseRaytracing;
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingAccumulation.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingAccumulation.compute")]
             public ComputeShader indirectDiffuseAccumulation;            
 
             // Ambient Occlusion
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingAmbientOcclusion.raytrace")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingAmbientOcclusion.raytrace")]
             public RaytracingShader aoRaytracing;
-            [Reload("RenderPipeline/Raytracing/Shaders/RaytracingAmbientOcclusionFilter.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/RaytracingAmbientOcclusionFilter.compute")]
             public ComputeShader raytracingAOFilterCS;
 
             // Ray count
-            [Reload("RenderPipeline/Raytracing/Shaders/CountTracedRays.compute")]
+            [Reload("Runtime/RenderPipeline/Raytracing/Shaders/CountTracedRays.compute")]
             public ComputeShader countTracedRays;
 #endif
         }
