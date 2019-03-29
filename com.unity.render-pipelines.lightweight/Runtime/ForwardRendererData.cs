@@ -1,8 +1,11 @@
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEditor.ProjectWindowCallback;
+#endif
 using System;
 
 namespace UnityEngine.Rendering.LWRP
-{
-    [CreateAssetMenu(fileName = "Custom Forward Renderer", menuName = "Rendering/Lightweight Render Pipeline/Forward Renderer", order = CoreUtils.assetCreateMenuPriority1)]
+{    
     public class ForwardRendererData : ScriptableRendererData
     {
         [Serializable, ReloadGroup]
@@ -17,6 +20,25 @@ namespace UnityEngine.Rendering.LWRP
             [SerializeField, Reload("Shaders/Utils/ScreenSpaceShadows.shader")]
             public Shader screenSpaceShadowPS;
 
+#if UNITY_EDITOR
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812")]
+        internal class CreateForwardRendererAsset : EndNameEditAction
+        {
+            public override void Action(int instanceId, string pathName, string resourceFile)
+            {
+                var instance = CreateInstance<ForwardRendererData>();
+                AssetDatabase.CreateAsset(instance, pathName);
+                Selection.activeObject = instance;
+            }
+        }
+        
+        [MenuItem("Assets/Create/Rendering/Lightweight Render Pipeline/Forward Renderer", priority = CoreUtils.assetCreateMenuPriority1)]
+        static void CreateForwardRendererData()
+        {
+            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, CreateInstance<CreateForwardRendererAsset>(), "CustomForwardRendererData.asset", null, null);
+        }
+#endif
+        
             [SerializeField, Reload("Shaders/Utils/Sampling.shader")]
             public Shader samplingPS;
         }

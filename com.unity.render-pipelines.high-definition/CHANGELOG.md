@@ -13,9 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added depth offset input in shader graph master nodes
 - Added a Parallax Occlusion Mapping node
 - Added SMAA support
-- Added an option in preferences to toggle the light emission normalization
 - Added Homothety and Symetry quick edition modifier on volume used in ReflectionProbe, PlanarReflectionProbe and DensityVolume
 - Added multi-edition support for DecalProjectorComponent
+- Improve hair shader
+- Added the _ScreenToTargetScaleHistory uniform variable to be used when sampling HDRP RTHandle history buffers.
+- Added settings in `FrameSettings` to change `QualitySettings.lodBias` and `QualitySettings.maximumLODLevel` during a rendering
 
 ### Fixed
 - Fixed HDRI sky intensity lux mode
@@ -45,6 +47,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed issue when switching mode in ReflectionProbe and PlanarReflectionProbe
 - Fixed issue where migratable component version where not always serialized when part of prefab's instance
 - Fixed an issue where shadow would not be rendered properly when light layer are not enabled
+- Fixed exposure weight on unlit materials
+- Fixed Light intensity not played in the player when recorded with animation/timeline
+- Fixed some issues when multi editing HDRenderPipelineAsset
+- Fixed emission node breaking the main shader graph preview in certain conditions.
+- Fixed checkout of baked probe asset when baking probes.
+- Fixed invalid gizmo position for rotated ReflectionProbe
+- Fixed multi-edition of material's SurfaceType and RenderingPath
+- Fixed whole pipeline reconstruction on selecting for the first time or modifying other than the currently used HDRenderPipelineAsset
+- Fixed single shadow debug mode
+- Fixed global scale factor debug mode when scale > 1
+- Fixed debug menu material overrides not getting applied to the Terrain Lit shader
+- Fixed typo in computeLightVariants
+- Fixed deferred pass with XR instancing by disabling ComputeLightEvaluation
 
 ### Changed
 - DensityVolume scripting API will no longuer allow to change between advance and normal edition mode
@@ -58,6 +73,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Optimize rendering with static only lighting and when no cullable lights/decals/density volumes are present. 
 - Updated handles for DecalProjectorComponent for enhanced spacial position readability and have edition mode for better SceneView management
 - DecalProjectorComponent are now scale independent in order to have reliable metric unit (see new Size field for changing the size of the volume)
+- Restructure code from HDCamera.Update() by adding UpdateAntialiasing() and UpdateViewConstants()
+- Renamed velocity to motion vectors
+- Objects rendered during the After Post Process pass while TAA is enabled will not benefit from existing depth buffer anymore. This is done to fix an issue where those object would wobble otherwise
+- Removed usage of builtin unity matrix for shadow, shadow now use same constant than other view
 
 ## [6.5.0-preview] - 2019-03-07
 
