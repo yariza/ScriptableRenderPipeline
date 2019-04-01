@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - LWRP Particle shaders now correctly render in stereo rendering modes. [case 1106699](https://fogbugz.unity3d.com/f/cases/1106699/)
 - Shaders with 'debug' in the name no longer are stripped automatically. [case 1112983](https://fogbugz.unity3d.com/f/cases/1112983/)
 - Fixed tiling issue with selection outline and baked cutout shadows.
+- Shadergraph Unlit Master node Premultiply acted the same as Alpha. [case 1114708](https://fogbugz.unity3d.com/f/cases/1114708/)
 - Fixed a project import issue in the LWRP template.
 - Fixed the warnings that appear when you create new Unlit Shader Graphs using the Lightweight Render Pipeline.
 - Fixed light attenuation precision on mobile platforms.
