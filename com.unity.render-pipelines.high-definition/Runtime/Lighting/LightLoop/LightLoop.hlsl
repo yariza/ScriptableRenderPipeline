@@ -197,18 +197,6 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
         }
     }
 
-    uint i = 0; // Declare once to avoid the D3D11 compiler warning.
-    if (featureFlags & LIGHTFEATUREFLAGS_DIRECTIONAL)
-    {
-        for (i = 0; i < _DirectionalLightCount; ++i)
-        {
-            if (IsMatchingLightLayer(_DirectionalLightDatas[i].lightLayers, builtinData.renderingLayers))
-            {
-                DirectLighting lighting = EvaluateBSDF_Directional(context, V, posInput, preLightData, _DirectionalLightDatas[i], bsdfData, builtinData);
-                AccumulateDirectLighting(lighting, aggregateLighting);
-            }
-        }
-    }
 
     // Define macro for a better understanding of the loop
     // TODO: this code is now much harder to understand...
@@ -359,6 +347,19 @@ void LightLoop( float3 V, PositionInputs posInput, PreLightData preLightData, BS
     }
 #undef EVALUATE_BSDF_ENV
 #undef EVALUATE_BSDF_ENV_SKY
+
+    uint i = 0; // Declare once to avoid the D3D11 compiler warning.
+    if (featureFlags & LIGHTFEATUREFLAGS_DIRECTIONAL)
+    {
+        for (i = 0; i < _DirectionalLightCount; ++i)
+        {
+            if (IsMatchingLightLayer(_DirectionalLightDatas[i].lightLayers, builtinData.renderingLayers))
+            {
+                DirectLighting lighting = EvaluateBSDF_Directional(context, V, posInput, preLightData, _DirectionalLightDatas[i], bsdfData, builtinData);
+                AccumulateDirectLighting(lighting, aggregateLighting);
+            }
+        }
+    }
 
     if (featureFlags & LIGHTFEATUREFLAGS_AREA)
     {
