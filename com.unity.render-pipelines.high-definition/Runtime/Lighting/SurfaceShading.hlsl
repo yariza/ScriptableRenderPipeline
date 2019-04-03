@@ -99,6 +99,7 @@ DirectLighting ShadeSurface_Directional(LightLoopContext lightLoopContext,
 
         if (surfaceReflection)
         {
+            attenuation *= ComputeMicroShadowing(bsdfData, NdotL);
             float intensity = attenuation * NdotL;
 
             lighting.diffuse  = diffuseBsdf  * (intensity * light.diffuseDimmer);
@@ -117,7 +118,6 @@ DirectLighting ShadeSurface_Directional(LightLoopContext lightLoopContext,
             lighting.specular = 0; // No spec trans, the compiler should optimize
         }
 
-        color *= ComputeMicroShadowing(bsdfData, NdotL);
         // Save ALU by applying light and cookie colors only once.
         lighting.diffuse  *= color;
         lighting.specular *= color;
